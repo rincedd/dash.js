@@ -187,27 +187,27 @@ app.controller('DashController', function($scope, Sources, Notes, Contributors, 
                     latencyTimes = requestWindow.map(function (req){ return Math.abs(req.tresponse.getTime() - req.trequest.getTime()) / 1000;});
 
                     movingLatency[type] = {
-                        average: latencyTimes.reduce(function(l, r) {return l + r;}) / latencyTimes.length, 
-                        high: latencyTimes.reduce(function(l, r) {return l < r ? r : l;}), 
-                        low: latencyTimes.reduce(function(l, r) {return l < r ? l : r;}), 
+                        average: latencyTimes.reduce(function(l, r) {return l + r;}) / latencyTimes.length,
+                        high: latencyTimes.reduce(function(l, r) {return l < r ? r : l;}),
+                        low: latencyTimes.reduce(function(l, r) {return l < r ? l : r;}),
                         count: latencyTimes.length
                     };
 
                     downloadTimes = requestWindow.map(function (req){ return Math.abs(req.tfinish.getTime() - req.tresponse.getTime()) / 1000;});
 
                     movingDownload[type] = {
-                        average: downloadTimes.reduce(function(l, r) {return l + r;}) / downloadTimes.length, 
-                        high: downloadTimes.reduce(function(l, r) {return l < r ? r : l;}), 
-                        low: downloadTimes.reduce(function(l, r) {return l < r ? l : r;}), 
+                        average: downloadTimes.reduce(function(l, r) {return l + r;}) / downloadTimes.length,
+                        high: downloadTimes.reduce(function(l, r) {return l < r ? r : l;}),
+                        low: downloadTimes.reduce(function(l, r) {return l < r ? l : r;}),
                         count: downloadTimes.length
                     };
 
                     durationTimes = requestWindow.map(function (req){ return req.mediaduration;});
 
                     movingRatio[type] = {
-                        average: (durationTimes.reduce(function(l, r) {return l + r;}) / downloadTimes.length) / movingDownload[type].average, 
-                        high: durationTimes.reduce(function(l, r) {return l < r ? r : l;}) / movingDownload[type].low, 
-                        low: durationTimes.reduce(function(l, r) {return l < r ? l : r;}) / movingDownload[type].high, 
+                        average: (durationTimes.reduce(function(l, r) {return l + r;}) / downloadTimes.length) / movingDownload[type].average,
+                        high: durationTimes.reduce(function(l, r) {return l < r ? r : l;}) / movingDownload[type].low,
+                        low: durationTimes.reduce(function(l, r) {return l < r ? l : r;}) / movingDownload[type].high,
                         count: durationTimes.length
                     };
                 }
@@ -612,9 +612,19 @@ app.controller('DashController', function($scope, Sources, Notes, Contributors, 
 
     $scope.setStream = function (item) {
         $scope.selectedItem = item;
+        $scope.licenseUrl = '';
     }
 
     $scope.doLoad = function () {
+        if ($scope.licenseUrl) {
+            var protectionData = new MediaPlayer.vo.protection.ProtectionData($scope.licenseUrl);
+            player.attachProtectionData({
+                'com.widevine.alpha': protectionData,
+                'com.microsoft.playready': protectionData
+            });
+        } else {
+            player.attachProtectionData(null);
+        }
         player.attachSource($scope.selectedItem.url);
         player.setAutoSwitchQuality($scope.abrEnabled);
         $scope.manifestUpdateInfo = null;
@@ -640,9 +650,10 @@ app.controller('DashController', function($scope, Sources, Notes, Contributors, 
 
     if (paramUrl !== null) {
     	var startPlayback = true;
-    
+
+        $scope.licenseUrl = decodeURIComponent(vars.la);
     	$scope.selectedItem = {};
-        $scope.selectedItem.url = paramUrl;
+        $scope.selectedItem.url = decodeURIComponent(paramUrl);
 
         if (vars.hasOwnProperty("autoplay")) {
         	startPlayback = (vars.autoplay === 'true');
