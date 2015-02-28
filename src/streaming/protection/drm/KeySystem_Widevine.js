@@ -97,9 +97,17 @@ MediaPlayer.dependencies.protection.KeySystem_Widevine = function() {
             return null;
         },
 
-        /* TODO: Implement me */
-        isInitDataEqual = function(/*initData1, initData2*/) {
-            return false;
+        isInitDataEqual = function(initData1, initData2) {
+            if (initData1.byteLength !== initData2.byteLength) {
+                return false;
+            } else {
+                for (var i = 0; i < initData1.byteLength; i++) {
+                    if (initData1[i] !== initData2[i]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         };
 
     return {
