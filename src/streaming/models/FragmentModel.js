@@ -39,9 +39,8 @@ MediaPlayer.dependencies.FragmentModel = function () {
             }
         },
 
-        getRequestForTime = function(arr, time) {
+        getRequestForTime = function(arr, time, threshold) {
             var lastIdx = arr.length - 1,
-                THRESHOLD = 0.001,
                 start = NaN,
                 end = NaN,
                 req = null,
@@ -52,7 +51,8 @@ MediaPlayer.dependencies.FragmentModel = function () {
                 req = arr[i];
                 start = req.startTime;
                 end = start + req.duration;
-                if ((!isNaN(start) && !isNaN(end) && ((time + THRESHOLD) >= start) && (time < end)) || (isNaN(start) && isNaN(time))) {
+                threshold = threshold || (req.duration / 2);
+                if ((!isNaN(start) && !isNaN(end) && ((time + threshold) >= start) && ((time - threshold) < end)) || (isNaN(start) && isNaN(time))) {
                     return req;
                 }
             }
@@ -65,7 +65,7 @@ MediaPlayer.dependencies.FragmentModel = function () {
 
             // for time use a specific filtration function
             if (filter.hasOwnProperty("time")) {
-                return [getRequestForTime.call(this, arr, filter.time)];
+                return [getRequestForTime.call(this, arr, filter.time, filter.threshold)];
             }
 
             return arr.filter(function(request/*, idx, arr*/) {
@@ -157,7 +157,7 @@ MediaPlayer.dependencies.FragmentModel = function () {
 
     return {
         system: undefined,
-        debug: undefined,
+        log: undefined,
         metricsModel: undefined,
         notify: undefined,
         subscribe: undefined,
@@ -218,7 +218,7 @@ MediaPlayer.dependencies.FragmentModel = function () {
                         req = arr[i];
 
                         if (isEqualMedia(request, req) || isEqualInit(request, req) || isEqualComplete(request, req)) {
-                            //self.debug.log(request.mediaType + " Fragment already loaded for time: " + request.startTime);
+                            //self.log(request.mediaType + " Fragment already loaded for time: " + request.startTime);
                             isLoaded = true;
                             break;
                         }
@@ -365,7 +365,7 @@ MediaPlayer.dependencies.FragmentModel = function () {
                     loadCurrentFragment.call(self, request);
                     break;
                 default:
-                    this.debug.log("Unknown request action.");
+                    this.log("Unknown request action.");
             }
         },
 

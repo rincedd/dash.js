@@ -62,7 +62,7 @@ MediaPlayer.dependencies.FragmentController = function () {
                 bytes = self.process(e.data.response);
 
             if (bytes === null) {
-                self.debug.log("No " + request.mediaType + " bytes to push.");
+                self.log("No " + request.mediaType + " bytes to push.");
                 return;
             }
 
@@ -123,7 +123,7 @@ MediaPlayer.dependencies.FragmentController = function () {
 
     return {
         system: undefined,
-        debug: undefined,
+        log: undefined,
         scheduleRulesCollection: undefined,
         rulesController: undefined,
         notify: undefined,
@@ -136,6 +136,10 @@ MediaPlayer.dependencies.FragmentController = function () {
             this[MediaPlayer.dependencies.FragmentModel.eventList.ENAME_STREAM_COMPLETED] = onStreamCompleted;
 
             this[MediaPlayer.dependencies.BufferController.eventList.ENAME_BUFFER_LEVEL_BALANCED] = onBufferLevelBalanced;
+
+            if (this.scheduleRulesCollection.sameTimeRequestRule) {
+                this.subscribe(MediaPlayer.dependencies.FragmentController.eventList.ENAME_STREAM_COMPLETED, this.scheduleRulesCollection.sameTimeRequestRule);
+            }
         },
 
         process: function (bytes) {
@@ -184,6 +188,14 @@ MediaPlayer.dependencies.FragmentController = function () {
 
         executePendingRequests: function() {
             executeRequests.call(this);
+        },
+
+        reset: function() {
+            fragmentModels = [];
+
+            if (this.scheduleRulesCollection.sameTimeRequestRule) {
+                this.unsubscribe(MediaPlayer.dependencies.FragmentController.eventList.ENAME_STREAM_COMPLETED, this.scheduleRulesCollection.sameTimeRequestRule);
+            }
         }
     };
 };
